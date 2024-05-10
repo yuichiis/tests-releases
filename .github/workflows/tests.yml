@@ -34,7 +34,7 @@ jobs:
       - name: packaging
         run: |
           mkdir packages
-          cp README.md packages/${{ matrix.artifact_name }}-README.md
+          cp README.md packages/${{ matrix.artifact_name }}-README.txt
 
       - name: Archive production artifacts
         uses: actions/upload-artifact@v4
