@@ -1,8 +1,7 @@
 name: tests
 
 permissions:
-  contents: write  
-  releases: write
+  contents: write
 
 on: 
   push:
@@ -67,7 +66,6 @@ jobs:
     - name: Release
       uses: softprops/action-gh-release@v2
       with:
-        token: ${{ secrets.ACCESS_TOKEN }}
         files: |
           packages/*
 
