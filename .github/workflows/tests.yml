@@ -9,27 +9,59 @@ on:
       - published
 
 jobs:
-  upload:
+  build_tests:
+    name: build
+    runs-on: ${{ matrix.os }}
+
     strategy:
-      matrix:
-        runs-on: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.runs-on }}
+        fail-fast: true
+        matrix:
+          include:
+            - name: Windows
+              os: windows-latest
+              artifact_name: win64
+            - name: Linux
+              os: ubuntu-latest
+              artifact_name: linux
+            - name: macOS
+              os: macos-latest
+              artifact_name: macos
+    
     steps:
-    - name: Create a File
-      run: echo "hello from ${{ matrix.runs-on }}" > file-${{ matrix.runs-on }}.txt
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: my-artifact-${{ matrix.runs-on }}
-        path: file-${{ matrix.runs-on }}.txt
-  download:
-    needs: upload
+      - name: Checkout codes
+        uses: "actions/checkout@v4"
+
+      - name: packaging
+        run: |
+          mkdir packages
+          cp README.md packages/${{ matrix.artifact_name }}-README.md
+
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-${{ matrix.artifact_name }}
+          path: |
+            packages/*
+
+  release:
+    needs: [ build_tests ]    
+    name: release
     runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
     steps:
-    - name: Download All Artifacts
+    - name: Download artifacts
       uses: actions/download-artifact@v4
       with:
-        path: my-artifact
-        pattern: my-artifact-*
+        pattern: package-*
         merge-multiple: true
-    - run: ls -R my-artifact
+
+    - name: check
+      run: ls -lR .
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          packages/*
+
