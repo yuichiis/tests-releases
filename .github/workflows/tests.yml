@@ -53,6 +53,7 @@ jobs:
     - name: Download artifacts
       uses: actions/download-artifact@v4
       with:
+        path: packages
         pattern: package-*
         merge-multiple: true
 
